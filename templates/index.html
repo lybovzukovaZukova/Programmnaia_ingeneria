@@ -1,1 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Распознавание фигур</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        .upload-area { margin: 20px; }
+        #result { margin-top: 20px; font-size: 18px; font-weight: bold; color: #2c3e50; }
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; }
+        button:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+    <h1>Распознавание геометрических фигур</h1>
+    
+    <div class="upload-area">
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="uploadImage()">Распознать</button>
+    </div>
+    
+    <div id="result"></div>
 
+    <script>
+        function uploadImage() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Выберите изображение!');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('result').textContent = 'Ошибка: ' + data.error;
+                } else {
+                    document.getElementById('result').textContent = 'Фигура: ' + data.prediction;
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').textContent = 'Ошибка: ' + error;
+            });
+        }
+    </script>
+</body>
+</html>

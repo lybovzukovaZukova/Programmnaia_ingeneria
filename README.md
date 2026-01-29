@@ -13,7 +13,7 @@
 Отображение результата с указанием вероятности.<br>
 
 **_Ссылка на загрузку модели:_** <br>
-https://drive.google.com/file/d/1I8gOn21Dw9XicB39lBTLYuK70gO1YXiV/view?usp=sharing<br>
+[https://drive.google.com/file/d/1I8gOn21Dw9XicB39lBTLYuK70gO1YXiV/view?usp=sharing](https://disk.yandex.ru/d/uW7m_wkVM6_trg)<br>
 
 **_Инструкция:_** <br>
 Скачать модель и добавить в корень проекта /<br>

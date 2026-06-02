@@ -2,53 +2,402 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Распознавание фигур</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
-        .upload-area { margin: 20px; }
-        #result { margin-top: 20px; font-size: 18px; font-weight: bold; color: #2c3e50; }
-        button { padding: 10px 20px; background: #3498db; color: white; border: none; cursor: pointer; }
-        button:hover { background: #2980b9; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: scale(1.02);
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .preview-container {
+            margin: 20px 0;
+            display: none;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .btn-predict {
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-top: 10px;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-predict:active {
+            transform: translateY(0);
+        }
+
+        .btn-predict:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9ff;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .confidence-text {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .success-icon {
+            color: #00b894;
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>Распознавание геометрических фигур</h1>
-    
-    <div class="upload-area">
-        <input type="file" id="imageInput" accept="image/*">
-        <button onclick="uploadImage()">Распознать</button>
+
+    <div class="container">
+        <h1>🔷 Распознавание фигур</h1>
+        <p class="subtitle">Загрузите изображение для анализа геометрической формы</p>
+        
+        <div class="upload-area" id="uploadArea" onclick="document.getElementById('imageInput').click()">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text">Нажмите или перетащите файл сюда</div>
+            <div class="upload-hint">Поддерживаются форматы: JPG, PNG, GIF</div>
+            <input type="file" id="imageInput" accept="image/*">
+        </div>
+
+        <div class="preview-container" id="previewContainer">
+            <img id="previewImage" src="" alt="Preview">
+        </div>
+
+        <button class="btn-predict" id="predictBtn" onclick="predict()" disabled>
+            🔍 Распознать фигуру
+        </button>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-label">Обнаруженная фигура:</div>
+            <div class="result-value" id="result">—</div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceBar" style="width: 0%"></div>
+            </div>
+            <div class="confidence-text" id="confidenceText">Уверенность: —</div>
+        </div>
+
+        <div class="error" id="errorBox"></div>
     </div>
-    
-    <div id="result"></div>
 
     <script>
-        function uploadImage() {
-            const fileInput = document.getElementById('imageInput');
-            const file = fileInput.files[0];
+        const imageInput = document.getElementById('imageInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const predictBtn = document.getElementById('predictBtn');
+        const resultBox = document.getElementById('resultBox');
+        const errorBox = document.getElementById('errorBox');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
             
-            if (!file) {
-                alert('Выберите изображение!');
+            if (e.dataTransfer.files.length > 0) {
+                imageInput.files = e.dataTransfer.files;
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Пожалуйста, выберите изображение');
                 return;
             }
-            
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                predictBtn.disabled = false;
+                hideError();
+                resultBox.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function predict() {
+            const input = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+            const confidenceBar = document.getElementById('confidenceBar');
+            const confidenceText = document.getElementById('confidenceText');
+
+            if (input.files.length === 0) {
+                showError("Пожалуйста, выберите файл!");
+                return;
+            }
+
             const formData = new FormData();
-            formData.append('file', file);
-            
-            fetch('/predict', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
+            formData.append('file', input.files[0]);
+
+            // Show loading state
+            predictBtn.disabled = true;
+            predictBtn.innerHTML = '<span class="loading"></span> Анализируем...';
+            resultBox.style.display = 'none';
+            hideError();
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
                 if (data.error) {
-                    document.getElementById('result').textContent = 'Ошибка: ' + data.error;
+                    showError("Ошибка: " + data.error);
                 } else {
-                    document.getElementById('result').textContent = 'Фигура: ' + data.prediction;
+                    resultDiv.innerText = data.shape;
+                    
+                    if (data.confidence) {
+                        const confidencePercent = (data.confidence * 100).toFixed(1);
+                        confidenceBar.style.width = confidencePercent + '%';
+                        confidenceText.innerText = `Уверенность: ${confidencePercent}%`;
+                    }
+                    
+                    resultBox.style.display = 'block';
                 }
-            })
-            .catch(error => {
-                document.getElementById('result').textContent = 'Ошибка: ' + error;
-            });
+            } catch (err) {
+                showError("Ошибка соединения с сервером");
+                console.error(err);
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.innerHTML = '🔍 Распознать фигуру';
+            }
+        }
+
+        function showError(message) {
+            errorBox.innerText = message;
+            errorBox.style.display = 'block';
+            setTimeout(() => {
+                errorBox.style.display = 'none';
+            }, 5000);
+        }
+
+        function hideError() {
+            errorBox.style.display = 'none';
         }
     </script>
 </body>

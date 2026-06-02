@@ -1,0 +1,8 @@
+Основные библиотеки:
+kagglehub - доступ к датасетам Kaggle
+numpy - работа с массивами (np)
+matplotlib - визуализация данных (plt)
+scikit-learn - разделение данных и метрики (train_test_split, confusion_matrix, classification_report)
+seaborn - продвинутая визуализация (sns)
+opencv-python - обработка изображений (cv2)
+tensorflow - построение нейронной сети (keras, layers)
